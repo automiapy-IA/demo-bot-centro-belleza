@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Demo Bot Centro de Belleza | Automia</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#1a0a1c 0%,#2d1f3d 50%,#1a1a2e 100%);min-height:100vh;padding:15px}
+.wrapper{max-width:420px;margin:0 auto}
+.hero{text-align:center;margin-bottom:16px;color:white}
+.hero h1{font-size:18px;margin-bottom:6px;line-height:1.3;background:linear-gradient(135deg,#ff6b9d,#c44dff,#6b9dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:11px;opacity:0.7}
+.phone{background:linear-gradient(145deg,#2a1a2e,#1a0a1c);border-radius:30px;padding:6px;box-shadow:0 15px 40px rgba(0,0,0,0.5),0 0 60px rgba(196,77,255,0.1)}
+.screen{background:#0b141a;border-radius:25px;overflow:hidden;height:480px;display:flex;flex-direction:column}
+.header{background:linear-gradient(135deg,#2d1f3d,#1a0a2e);padding:10px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(196,77,255,0.2)}
+.avatar{width:40px;height:40px;background:linear-gradient(135deg,#ff6b9d,#c44dff);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
+.info h3{color:#f0e6ff;font-size:14px;font-weight:600}
+.info p{color:#c44dff;font-size:10px}
+.messages{flex:1;padding:10px;overflow-y:auto;background:linear-gradient(180deg,#0f0a14 0%,#0b141a 100%)}
+.msg{max-width:85%;padding:8px 11px;border-radius:12px;margin-bottom:6px;font-size:12px;line-height:1.45;word-wrap:break-word}
+.msg.sent{background:linear-gradient(135deg,#6b4c83,#4a3660);color:#f0e6ff;margin-left:auto;border-bottom-right-radius:3px}
+.msg.recv{background:linear-gradient(135deg,#1f1a2e,#2a1f3d);color:#e6dff0;border-bottom-left-radius:3px;border:1px solid rgba(196,77,255,0.15)}
+.msg .t{font-size:8px;color:rgba(255,255,255,.25);text-align:right;margin-top:3px}
+.input-area{background:linear-gradient(135deg,#1a0f1f,#0f0a14);padding:8px 10px;display:flex;gap:8px;border-top:1px solid rgba(196,77,255,0.1)}
+.input-area input{flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(196,77,255,0.2);padding:10px 14px;border-radius:20px;color:#f0e6ff;font-size:13px}
+.input-area input:focus{outline:none;background:rgba(255,255,255,0.12);border-color:rgba(196,77,255,0.4)}
+.input-area input::placeholder{color:rgba(196,77,255,0.5)}
+.input-area button{background:linear-gradient(135deg,#c44dff,#ff6b9d);border:none;width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.input-area button svg{fill:white;width:16px;height:16px}
+.quick{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:12px}
+.qbtn{background:linear-gradient(135deg,rgba(196,77,255,0.2),rgba(255,107,157,0.2));color:#e6dff0;border:1px solid rgba(196,77,255,0.3);padding:7px 11px;border-radius:12px;cursor:pointer;font-size:10px}
+.benefits{margin-top:14px;background:linear-gradient(135deg,rgba(196,77,255,0.08),rgba(255,107,157,0.08));border:1px solid rgba(196,77,255,0.15);border-radius:12px;padding:12px}
+.benefits div{color:rgba(240,230,255,.9);font-size:10px;padding:4px 0}
+.cta{margin-top:14px;background:linear-gradient(135deg,#25D366,#128C7E);border-radius:12px;padding:14px;text-align:center}
+.cta p{color:white;font-size:11px;margin-bottom:8px}
+.cta a{display:inline-block;background:white;color:#128C7E;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:11px;font-weight:700}
+.rst{background:transparent;border:1px solid rgba(196,77,255,0.25);color:rgba(240,230,255,.5);margin-top:12px;width:100%;padding:8px;border-radius:10px;cursor:pointer;font-size:10px}
+.typing{display:flex;gap:4px;padding:8px 12px;background:linear-gradient(135deg,#1f1a2e,#2a1f3d);border-radius:12px;width:fit-content;margin-bottom:6px;border:1px solid rgba(196,77,255,0.15)}
+.typing span{width:6px;height:6px;background:#c44dff;border-radius:50%;animation:bounce 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<div class="hero">
+<h1>💅 Mirá cómo este bot agenda y vende para tu salón</h1>
+<p>Probá escribiendo como si fueras un/a cliente</p>
+</div>
+<div class="phone">
+<div class="screen">
+<div class="header">
+<div class="avatar">✨</div>
+<div class="info"><h3>Centro de Belleza</h3><p>en línea</p></div>
+</div>
+<div class="messages" id="chat"></div>
+<div class="input-area">
+<input type="text" id="input" placeholder="Escribí algo..." onkeydown="if(event.key==='Enter')send()">
+<button onclick="send()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+</div>
+</div>
+</div>
+<div class="quick">
+<button class="qbtn" onclick="q('Hola')">👋 Saludar</button>
+<button class="qbtn" onclick="q('Qué servicios tienen?')">📋 Servicios</button>
+<button class="qbtn" onclick="q('Quiero cortarme el pelo')">💇 Corte</button>
+<button class="qbtn" onclick="q('Manicure')">💅 Uñas</button>
+<button class="qbtn" onclick="q('Corte y barba')">🧔 Barbería</button>
+<button class="qbtn" onclick="elegirAuto()">📅 Elegir</button>
+<button class="qbtn" onclick="q('Dale')">✅ Confirmar</button>
+<button class="qbtn" onclick="q('Donde quedamos?')">🔄 Retomar</button>
+</div>
+<div class="benefits">
+<div>✅ Agenda turnos 24/7 automáticamente</div>
+<div>✅ Sugiere servicios adicionales (más ventas)</div>
+<div>✅ Envía recordatorios antes del turno</div>
+<div>✅ 100% personalizado a tu salón</div>
+</div>
+<div class="cta">
+<p><strong>¿Querés uno para tu salón de belleza?</strong></p>
+<a href="https://wa.me/595992954169?text=Hola!%20Vi%20el%20demo%20del%20bot%20de%20belleza%20y%20me%20interesa" target="_blank">💬 Hablemos por WhatsApp</a>
+</div>
+<button class="rst" onclick="reset()">🔄 Reiniciar demo</button>
+</div>
+
+<script>
+// ============================================
+// CATÁLOGO
+// ============================================
+var CAT={
+peluqueria:[
+{id:'p1',nombre:'Corte mujer',dur:45,precio:85000},
+{id:'p2',nombre:'Brushing',dur:30,precio:60000},
+{id:'p3',nombre:'Tintura',dur:120,precio:250000},
+{id:'p4',nombre:'Mechas',dur:150,precio:350000},
+{id:'p5',nombre:'Alisado',dur:180,precio:450000},
+{id:'p6',nombre:'Corte + Brushing',dur:60,precio:120000}
+],
+barberia:[
+{id:'b1',nombre:'Corte hombre',dur:30,precio:55000},
+{id:'b2',nombre:'Barba',dur:20,precio:35000},
+{id:'b3',nombre:'Corte + Barba',dur:45,precio:80000},
+{id:'b4',nombre:'Corte niño',dur:25,precio:45000}
+],
+unas:[
+{id:'u1',nombre:'Manicure',dur:40,precio:60000},
+{id:'u2',nombre:'Pedicure',dur:50,precio:75000},
+{id:'u3',nombre:'Mani + Pedi',dur:80,precio:120000},
+{id:'u4',nombre:'Semipermanente',dur:60,precio:95000},
+{id:'u5',nombre:'Esculpidas',dur:120,precio:180000}
+],
+facial:[
+{id:'f1',nombre:'Limpieza facial',dur:60,precio:150000},
+{id:'f2',nombre:'Hidratación',dur:30,precio:80000},
+{id:'f3',nombre:'Limpieza + Hidratación',dur:75,precio:180000}
+],
+depilacion:[
+{id:'d1',nombre:'Cejas',dur:15,precio:30000},
+{id:'d2',nombre:'Bozo',dur:10,precio:20000},
+{id:'d3',nombre:'Axilas',dur:15,precio:35000},
+{id:'d4',nombre:'Piernas',dur:45,precio:120000},
+{id:'d5',nombre:'Bikini',dur:20,precio:55000}
+],
+maquillaje:[
+{id:'m1',nombre:'Maquillaje social',dur:45,precio:150000},
+{id:'m2',nombre:'Maquillaje novia',dur:90,precio:350000}
+],
+masajes:[
+{id:'ms1',nombre:'Masaje relajante',dur:60,precio:180000},
+{id:'ms2',nombre:'Descontracturante',dur:60,precio:200000},
+{id:'ms3',nombre:'Piedras calientes',dur:75,precio:250000}
+],
+spa:[
+{id:'sp1',nombre:'Día de spa',dur:180,precio:450000},
+{id:'sp2',nombre:'Circuito relax',dur:90,precio:280000}
+],
+bronceado:[
+{id:'br1',nombre:'Bronceado spray',dur:20,precio:120000},
+{id:'br2',nombre:'Cama solar',dur:15,precio:60000}
+]
+};
+
+var PROF={peluqueria:['Sofía','Camila'],barberia:['Carlos','Miguel'],unas:['Luciana','Florencia'],facial:['Dra. Ana'],depilacion:['Patricia'],maquillaje:['Valentina'],masajes:['Marina'],spa:['Equipo Spa'],bronceado:['Staff']};
+
+var PROMOS={
+'u1':{combo:'u3',txt:'¿Sumamos pedicure? Combo Mani+Pedi a 120.000 Gs (ahorrás 15.000!) 💅'},
+'u2':{combo:'u3',txt:'¿Sumamos manicure? Combo Mani+Pedi a 120.000 Gs 💅'},
+'p1':{combo:'p6',txt:'¿Agregamos brushing? Corte + Brushing a 120.000 Gs (ahorrás 25.000!) ✨'},
+'b1':{combo:'b3',txt:'¿Barba también? Combo Corte + Barba a 80.000 Gs 🔥'},
+'b2':{combo:'b3',txt:'¿Corte también? Combo Corte + Barba a 80.000 Gs 🔥'},
+'f1':{combo:'f3',txt:'¿Sumamos hidratación? Limpieza + Hidratación a 180.000 Gs ✨'}
+};
+
+var HORARIOS=['10:00','10:30','11:00','11:30','12:00','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00'];
+
+// Estado
+var S={saludado:false,turnos:[],actual:null,esperando:null,genero:null,ultimaResp:''};
+
+// Utilidades
+function fmt(n){return n.toLocaleString('es-PY')+' Gs'}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function fmtDur(m){return m<60?m+'min':Math.floor(m/60)+'h'+(m%60?' '+m%60+'min':'')}
+function getProf(cat){return pick(PROF[cat]||['Staff'])}
+function genHorarios(){var h=[];for(var i=0;i<HORARIOS.length;i++)if(Math.random()>0.25)h.push(HORARIOS[i]);return h.length>4?h:HORARIOS.slice(0,8)}
+function getDia(off){var d=new Date();d.setDate(d.getDate()+off);var dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];return{nombre:dias[d.getDay()],fecha:d.getDate()+'/'+(d.getMonth()+1)}}
+function getCat(){if(!S.actual)return null;for(var c in CAT)for(var i=0;i<CAT[c].length;i++)if(CAT[c][i].id===S.actual.srv.id)return c;return null}
+function findCombo(id){var p=PROMOS[id];if(!p)return null;for(var c in CAT)for(var i=0;i<CAT[c].length;i++)if(CAT[c][i].id===p.combo)return CAT[c][i];return null}
+
+// ============================================
+// EXTRACCIÓN INTELIGENTE
+// ============================================
+function extraerHora(t){
+// Múltiples formatos: "10:30", "10 30", "10am", "10 am", "a las 10", etc
+var m=t.match(/(\d{1,2})\s*[:.\s]\s*(\d{2})/)||t.match(/(\d{1,2})\s*(am|pm|hs|h)?(?:\s|$)/i)||t.match(/a\s*las?\s*(\d{1,2})/i);
+if(m){
+var h=parseInt(m[1]);
+var min=(m[2]&&/^\d+$/.test(m[2]))?m[2]:'00';
+if(/pm/i.test(t)&&h<12)h+=12;
+if(h>=8&&h<=21)return(h<10?'0':'')+h+':'+min;
+}
+// Palabras
+if(/\bdiez\b/i.test(t))return'10:00';
+if(/\bonce\b/i.test(t))return'11:00';
+if(/\bdoce\b|mediod[ií]a/i.test(t))return'12:00';
+if(/\btres\b/i.test(t))return'15:00';
+if(/\bcuatro\b/i.test(t))return'16:00';
+if(/\bcinco\b/i.test(t))return'17:00';
+return null;
+}
+
+function extraerDia(t){
+if(/\bhoy\b/i.test(t))return getDia(0);
+if(/\bma[nñ]ana\b/i.test(t)&&!/por la ma[nñ]ana/i.test(t))return getDia(1);
+if(/\blunes\b/i.test(t))return{nombre:'Lunes'};
+if(/\bmartes\b/i.test(t))return{nombre:'Martes'};
+if(/\bmi[eé]rcoles\b/i.test(t))return{nombre:'Miércoles'};
+if(/\bjueves\b/i.test(t))return{nombre:'Jueves'};
+if(/\bviernes\b/i.test(t))return{nombre:'Viernes'};
+if(/\bs[aá]bado\b/i.test(t))return{nombre:'Sábado'};
+if(/\bdomingo\b/i.test(t))return{nombre:'Domingo'};
+return null;
+}
+
+function extraerDatos(t){
+var m=t.match(/([a-záéíóúñ]{2,})\s+(\d{2,})/i);
+if(m)return{nombre:m[1].charAt(0).toUpperCase()+m[1].slice(1),tel:m[2]};
+return null;
+}
+
+function esSaludo(t){return/^(hol|alo|ola|wena|buen|hey|hi|ei)/i.test(t)||/saludo/i.test(t)}
+function esConfirma(t){return/^(s[ií]|dale|ok|va|bueno|listo|perfect|genial|claro|obvio|sep|sip|eso|exacto)/i.test(t)||/\b(si+|dale|confirm|tambien|también|quiero|obvio|claro)\b/i.test(t)}
+function esNiega(t){return/^no[pe\s!.,]*$/i.test(t)||/\b(solo|solamente|sin\s+\w+|nada\s*m[aá]s)\b/i.test(t)}
+function esCatalogo(t){return/servicios|carta|menu|qu[eé]\s*(tienen|hay|ofrecen)/i.test(t)}
+function esDondeQuedamos(t){return/donde\s*quedamos|en\s*qu[eé]\s*est[aá]bamos|retomar|continuar|seguimos/i.test(t)}
+function esCierre(t){return/eso\s*(es\s*)?todo|termin|nada\s*m[aá]s\s*$/i.test(t)}
+
+function detectarCategoria(t){
+if(/peluquer|tintura|mechas|alisado|brushing/i.test(t))return'peluqueria';
+if(/barber|barba/i.test(t))return'barberia';
+if(/u[nñ]as?|manicur|pedicur|esculpid|semipermanente|mani\b|pedi\b/i.test(t))return'unas';
+if(/facial|limpieza.*(cara|facial)|hidrataci/i.test(t))return'facial';
+if(/depila|cera\b|bozo|axilas?|piernas?|bikini/i.test(t))return'depilacion';
+if(/maquilla|makeup/i.test(t))return'maquillaje';
+if(/masaje|relajante|descontracturante|piedras/i.test(t))return'masajes';
+if(/\bspa\b|relax|circuito/i.test(t))return'spa';
+if(/broncea|solar/i.test(t))return'bronceado';
+return null;
+}
+
+function detectarGenero(t){
+if(/\b(mujer|dama|femenin|ella|nena|ni[nñ]a|para\s*m[ií])\b/i.test(t))return'F';
+if(/\b(hombre|caballero|varon|masculin|ni[nñ]o|nene|para\s*[eé]l|chico)\b/i.test(t))return'M';
+return null;
+}
+
+function esCorteAmbiguo(t){
+return/\bcorte\b|cortarme|cortar.*pelo/i.test(t)&&!detectarGenero(t)&&!/barba|barber/i.test(t);
+}
+
+// ============================================
+// RESPUESTAS
+// ============================================
+function mostrarHoras(dia){
+var h=genHorarios();
+var am=h.filter(function(x){return parseInt(x)<14});
+var pm=h.filter(function(x){return parseInt(x)>=14});
+var m='📅 Horarios para <strong>'+dia+'</strong>:\n';
+if(am.length)m+='\n🌅 Mañana: '+am.join(' • ');
+if(pm.length)m+='\n🌆 Tarde: '+pm.join(' • ');
+m+='\n\n¿Qué horario te queda bien?';
+return m;
+}
+
+function confirmarTurno(){
+var cat=getCat();
+S.actual.prof=getProf(cat);
+S.esperando='datos';
+return '📅 '+S.actual.dia.nombre+(S.actual.dia.fecha?' '+S.actual.dia.fecha:'')+' a las '+S.actual.hora+'\n👤 Te atiende: '+S.actual.prof+'\n💰 '+fmt(S.actual.srv.precio)+'\n\nPara confirmar, pasame tu nombre y teléfono\nEj: Ana 0981123456';
+}
+
+function finalizarTurno(nombre,tel){
+var m='✅ <strong>¡Turno confirmado!</strong>\n\n';
+m+='📋 '+S.actual.srv.nombre+'\n';
+m+='📅 '+S.actual.dia.nombre+(S.actual.dia.fecha?' '+S.actual.dia.fecha:'')+' a las '+S.actual.hora+'\n';
+m+='👤 '+S.actual.prof+'\n';
+m+='💰 '+fmt(S.actual.srv.precio)+'\n\n';
+m+='Cliente: '+nombre+' ('+tel+')\n\nTe enviamos recordatorio 24hs antes ✨';
+S.turnos.push(Object.assign({},S.actual,{cliente:nombre}));
+S.actual=null;S.esperando=null;
+setTimeout(function(){addMsg('¿Querés agendar otro servicio? 💅💇',false)},1500);
+return m;
+}
+
+function iniciarServicio(srv,cat){
+S.actual={srv:srv,dia:null,hora:null,prof:null};
+if(PROMOS[srv.id]){
+S.esperando='promo';
+return '¡Buena elección! '+srv.nombre+' ('+fmt(srv.precio)+')\n\n💡 '+PROMOS[srv.id].txt;
+}
+S.esperando='dia';
+return '¡Perfecto! '+srv.nombre+'\n💰 '+fmt(srv.precio)+' • ⏱ '+fmtDur(srv.dur)+'\n\n¿Qué día te viene bien?';
+}
+
+// ============================================
+// RESPUESTA PRINCIPAL - CON LEY DE AVANCE
+// ============================================
+function resp(txt){
+var t=txt.toLowerCase();
+var dia=extraerDia(t);
+var hora=extraerHora(t);
+var datos=extraerDatos(t);
+var cat=detectarCategoria(t);
+var genero=detectarGenero(t);
+
+// REGLA: Nunca repetir la misma respuesta
+var generarResp=function(r){
+if(r===S.ultimaResp){
+// Si es la misma, variar un poco
+if(S.esperando==='genero')return '¿Es corte para hombre/niño o para mujer/niña?';
+if(S.esperando==='dia')return '¿Qué día te queda mejor? Ej: mañana, viernes...';
+if(S.esperando==='hora')return '¿A qué hora preferís?';
+if(S.esperando==='promo')return '¿Qué decís, aprovechamos el combo?';
+if(S.esperando==='datos')return 'Necesito tu nombre y un número para confirmar 📱';
+}
+S.ultimaResp=r;
+return r;
+};
+
+// === DATOS ===
+if(S.esperando==='datos'){
+if(datos)return finalizarTurno(datos.nombre,datos.tel);
+// Intentar ser flexible
+var m=txt.match(/([a-záéíóúñ]{2,})/i);
+var n=txt.match(/(\d{2,})/);
+if(m&&n)return finalizarTurno(m[1].charAt(0).toUpperCase()+m[1].slice(1),n[1]);
+return generarResp('Pasame tu nombre y teléfono, ej: María 0991234567');
+}
+
+// === HORA ===
+if(S.esperando==='hora'){
+if(hora){S.actual.hora=hora;return confirmarTurno()}
+// Buscar cualquier número
+var num=txt.match(/(\d{1,2})/);
+if(num){var h=parseInt(num[1]);if(h>=8&&h<=21){S.actual.hora=(h<10?'0':'')+h+':00';return confirmarTurno()}}
+return generarResp(mostrarHoras(S.actual.dia.nombre));
+}
+
+// === DÍA ===
+if(S.esperando==='dia'){
+if(dia){
+S.actual.dia=dia;
+if(hora){S.actual.hora=hora;return confirmarTurno()}
+S.esperando='hora';
+return mostrarHoras(dia.nombre);
+}
+if(hora){S.actual.hora=hora;return generarResp('¿Qué día preferís para las '+hora+'?')}
+return generarResp('¿Qué día te viene bien? Mañana, viernes, etc.');
+}
+
+// === PROMO ===
+if(S.esperando==='promo'){
+if(esConfirma(t)){
+var combo=findCombo(S.actual.srv.id);
+if(combo)S.actual.srv=combo;
+}
+// Siempre avanzar (acepte o no la promo)
+S.esperando='dia';
+if(dia){
+S.actual.dia=dia;
+if(hora){S.actual.hora=hora;return confirmarTurno()}
+S.esperando='hora';
+return '¡Genial! '+S.actual.srv.nombre+' ('+fmt(S.actual.srv.precio)+')\n\n'+mostrarHoras(dia.nombre);
+}
+return '¡Genial! '+S.actual.srv.nombre+' ('+fmt(S.actual.srv.precio)+')\n\n¿Qué día te viene bien?';
+}
+
+// === GÉNERO (para corte) ===
+if(S.esperando==='genero'){
+if(genero){
+S.genero=genero;
+var srv=genero==='F'?CAT.peluqueria[0]:(genero==='M'&&/ni[nñ]o|nene|chico/i.test(t))?CAT.barberia[3]:CAT.barberia[0];
+S.esperando=null;
+if(dia||hora){
+S.actual={srv:srv,dia:dia,hora:hora,prof:null};
+if(dia&&hora){return confirmarTurno()}
+if(dia){S.esperando='hora';return srv.nombre+' ('+fmt(srv.precio)+')\n\n'+mostrarHoras(dia.nombre)}
+S.esperando='dia';return srv.nombre+' ('+fmt(srv.precio)+')\n\n¿Qué día preferís para las '+hora+'?';
+}
+return iniciarServicio(srv,genero==='F'?'peluqueria':'barberia');
+}
+return generarResp('¿El corte es para caballero/niño o para dama/niña? 💇');
+}
+
+// === CIERRE ===
+if(esCierre(t)){
+if(!S.actual&&!S.turnos.length)return '¿Qué servicio te gustaría agendar?';
+if(S.actual){S.esperando='datos';return 'Para confirmar '+S.actual.srv.nombre+', pasame nombre y teléfono.';}
+return '¡Listo! Tenés '+S.turnos.length+' turno(s) agendado(s). ¡Te esperamos! ✨';
+}
+
+// === DONDE QUEDAMOS ===
+if(esDondeQuedamos(t)){
+if(S.esperando==='datos')return 'Estábamos por confirmar. Pasame tu nombre y teléfono.';
+if(S.esperando==='hora')return 'Estábamos eligiendo horario.\n\n'+mostrarHoras(S.actual.dia.nombre);
+if(S.esperando==='dia'||S.esperando==='promo')return 'Estábamos con '+S.actual.srv.nombre+'. ¿Qué día preferís?';
+if(S.turnos.length)return 'Tenés '+S.turnos.length+' turno(s). ¿Querés agendar otro?';
+return '¿Qué servicio te interesa? Tenemos peluquería, uñas, facial, masajes...';
+}
+
+// === CORTE AMBIGUO ===
+if(esCorteAmbiguo(t)){
+if(genero){
+S.genero=genero;
+var srv=genero==='F'?CAT.peluqueria[0]:CAT.barberia[0];
+return iniciarServicio(srv,genero==='F'?'peluqueria':'barberia');
+}
+S.esperando='genero';
+return '¿El corte es para caballero/niño o para dama/niña? 💇';
+}
+
+// === CATÁLOGO ===
+if(esCatalogo(t)){
+S.saludado=true;
+return '✨ <strong>Nuestros Servicios</strong>\n\n💇‍♀️ Peluquería - desde '+fmt(60000)+'\n💈 Barbería - desde '+fmt(35000)+'\n💅 Uñas - desde '+fmt(60000)+'\n🧖‍♀️ Facial - desde '+fmt(80000)+'\n🌸 Depilación - desde '+fmt(20000)+'\n💄 Maquillaje - desde '+fmt(150000)+'\n💆 Masajes - desde '+fmt(180000)+'\n🧘 Spa - desde '+fmt(280000)+'\n☀️ Bronceado - desde '+fmt(60000)+'\n\n¿Qué te interesa?';
+}
+
+// === CATEGORÍA DETECTADA ===
+if(cat){
+S.saludado=true;
+var srv=CAT[cat][0];
+// Buscar servicio específico
+for(var i=0;i<CAT[cat].length;i++){
+var n=CAT[cat][i].nombre.toLowerCase();
+if(t.indexOf(n)>=0)srv=CAT[cat][i];
+}
+// Si también dijo día y/o hora
+if(dia||hora){
+S.actual={srv:srv,dia:dia,hora:hora,prof:null};
+if(dia&&hora){return confirmarTurno()}
+if(dia){S.esperando='hora';return srv.nombre+' ('+fmt(srv.precio)+')\n\n'+mostrarHoras(dia.nombre)}
+S.esperando='dia';return srv.nombre+' ('+fmt(srv.precio)+')\n\n¿Qué día querés para las '+hora+'?';
+}
+return iniciarServicio(srv,cat);
+}
+
+// === SALUDO ===
+if(esSaludo(t)){
+if(S.saludado)return '¿En qué más te puedo ayudar?';
+S.saludado=true;
+return pick(['¡Hola! 👋 ¿Qué servicio te gustaría agendar?\n\n💇 Peluquería / Barbería\n💅 Uñas\n🧖 Faciales\n💆 Masajes y Spa\n\nDecime qué necesitás 😊','¡Buenas! ¿Qué te gustaría hacerte? Pelo, uñas, facial, masajes... 💅✨','¡Hola! ¿Cómo puedo ayudarte? 😊']);
+}
+
+// === FALLBACK INTELIGENTE ===
+// Si hay contexto activo, tratar de avanzar
+if(S.actual){
+if(dia){S.actual.dia=dia;if(hora){S.actual.hora=hora;return confirmarTurno()}S.esperando='hora';return mostrarHoras(dia.nombre)}
+if(hora){if(S.actual.dia){S.actual.hora=hora;return confirmarTurno()}S.actual.hora=hora;S.esperando='dia';return '¿Qué día preferís para las '+hora+'?'}
+}
+
+// Si parece saludo, saludar
+if(esSaludo(t)){S.saludado=true;return '¡Hola! ¿Qué servicio te interesa? 💅';}
+
+// Último recurso: ofrecer ayuda
+if(!S.saludado){S.saludado=true;return '¡Hola! 👋 ¿Qué servicio te gustaría agendar? Peluquería, uñas, facial, masajes...';}
+return '¿Qué servicio te interesa? Podés escribir "servicios" para ver todo 💅';
+}
+
+// ============================================
+// CHAT UI
+// ============================================
+function addMsg(t,s){var c=document.getElementById('chat');var d=document.createElement('div');d.className='msg '+(s?'sent':'recv');d.innerHTML=t.replace(/\n/g,'<br>')+'<div class="t">'+new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'})+'</div>';c.appendChild(d);c.scrollTop=c.scrollHeight}
+function showTyping(){var c=document.getElementById('chat');var d=document.createElement('div');d.id='typing';d.className='typing';d.innerHTML='<span></span><span></span><span></span>';c.appendChild(d);c.scrollTop=c.scrollHeight}
+function hideTyping(){var t=document.getElementById('typing');if(t)t.remove()}
+function send(){var i=document.getElementById('input');var t=i.value.trim();if(!t)return;addMsg(t,true);i.value='';showTyping();setTimeout(function(){hideTyping();addMsg(resp(t),false)},300+Math.random()*400)}
+function q(t){document.getElementById('input').value=t;send()}
+function elegirAuto(){if(!S.actual){q('Manicure');return}if(!S.actual.dia){q('Mañana');return}if(!S.actual.hora){q('15:00');return}q('Ana 55')}
+function reset(){document.getElementById('chat').innerHTML='';S={saludado:false,turnos:[],actual:null,esperando:null,genero:null,ultimaResp:''}}
+</script>
+</body>
+</html>
